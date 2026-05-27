@@ -350,6 +350,12 @@ Different systems decode encoded characters differently.
 Example:
 
 ```http id="jlwmu8"
+GET /my-account%23%2f%2e%2e%2fresources?wcd
+Host: vulnerable.com
+```
+
+
+```http id="jlwmu8"
 GET /profile%2Ftest.css HTTP/1.1
 Host: vulnerable.com
 ```
