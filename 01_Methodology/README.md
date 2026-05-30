@@ -1,241 +1,463 @@
 # METHODOLOGY
 
+
+# 1. RECONNAISSANCE
+
+## Objective
+
+Map the attack surface.
+
+Do not begin exploitation until the application is understood.
+
 ---
 
-## 0. RULES
+## Subdomain Discovery
 
-* Do not test everything. Focus on impact.
-* If no progress in 20 minutes, change direction.
-* Always ask: can this lead to account takeover or remote code execution.
+Identify:
+
+* Development environments
+* Staging environments
+* Administrative interfaces
+* API hosts
 
 ---
 
-## 1. TARGET TRIAGE
+## Content Discovery
 
-### Identify high-value areas first
+Perform:
 
-* Authentication (login, reset, register)
-* Account settings
+* Directory fuzzing
+* File fuzzing
+* Backup file discovery
+
+Check for:
+
+* Directory listing
+* Exposed files
+* Hidden functionality
+
+---
+
+## JavaScript Analysis
+
+Primary source of information.
+
+Extract:
+
+* Endpoints
+* Parameters
+* API routes
+* Hidden functionality
+* Tokens
+* Internal references
+
+---
+
+## Application Mapping
+
+Identify:
+
+* Authentication functionality
+* Session functionality
+* Authorization boundaries
 * File upload functionality
-* Payments and transactions
+* Administrative functionality
+* Payment functionality
+
+---
+
+# 2. CONFIGURATION TESTING
+
+## Objective
+
+Identify security misconfigurations.
+
+---
+
+## Review Server Configuration
+
+Check:
+
+* HTTP methods
+* Security headers
+* TLS configuration
+* CORS configuration
+
+---
+
+## Review Exposed Functionality
+
+Check for:
+
 * Admin panels
+* Debug functionality
+* Source code exposure
+* Backup files
+* Cloud storage exposure
 
 ---
 
-### Immediate attack indicators
+## Review Error Handling
 
-* `user_id`, `account_id` → test for IDOR
-* File upload → attempt execution
-* URL input → test for SSRF
-* Multi-step workflows → test for logic flaws
+Identify:
 
----
-
-## 2. ATTACK SURFACE EXPANSION
-
-### JavaScript analysis (primary source)
-
-* Extract endpoints, parameters, hidden functionality, tokens
-* Identify internal logic and unused features
+* Stack traces
+* Verbose errors
+* Internal information disclosure
 
 ---
 
-### Application mapping
+# 3. AUTHENTICATION TESTING
 
-* Crawl application
-* Identify:
+## Objective
 
-  * Endpoints
-  * Parameters
-  * Forms
-  * Hidden functionality
+Identify weaknesses in identity verification.
 
 ---
 
-### Parameter discovery
+## Test Registration
 
-* Identify all inputs:
+Review:
 
-  * GET / POST
-  * Headers
-  * Cookies
-
-* Find:
-
-  * Hidden parameters
-  * Unused parameters
-  * Parameter pollution opportunities
+* Account creation
+* Email verification
+* User enumeration
 
 ---
 
-### Avoid
+## Test Login
 
-* Blind brute force without context
-* Low-value static content
+Review:
 
----
-
-## 3. INPUT → DATA FLOW → EXPLOIT
-
-### For every input
-
-1. Where does it go
-2. What processes it
-3. What can be influenced
+* Credential validation
+* Lockout controls
+* Authentication bypasses
 
 ---
 
-### Data flow mapping
+## Test Password Management
 
-* Reflection → XSS
-* Database → SQL Injection
-* File system → Path Traversal
-* System calls → Command Injection
-* External requests → SSRF
+Review:
 
----
-
-### Rule
-
-If input reaches a sensitive component, prioritize testing it.
+* Password reset
+* Password change
+* Recovery workflows
 
 ---
 
-## 4. ATTACK PRIORITY
+## Test Federated Authentication
 
-### 1. Authorization
+Review:
 
-* Test access to other users’ data
-* Modify identifiers
-* Direct access to restricted functionality
+* OAuth
+* OpenID Connect
+* SSO
+
+---
+
+# 4. SESSION TESTING
+
+## Objective
+
+Determine how authentication state is maintained.
+
+---
+
+## Review Session Tokens
+
+Identify:
+
+* Cookies
+* JWTs
+* Session identifiers
+
+---
+
+## Test Session Controls
+
+Review:
+
+* Session fixation
+* Session timeout
+* Session invalidation
+* Concurrent sessions
+
+---
+
+## Test CSRF Protections
+
+Review:
+
+* State-changing requests
+* CSRF tokens
+* SameSite protections
+
+---
+
+# 5. AUTHORIZATION TESTING
+
+## Objective
+
+Determine whether access controls are enforced correctly.
+
+---
+
+## Horizontal Authorization
+
+Can one user access another user's resources?
 
 Focus:
 
-* IDOR
-* Privilege escalation
+* IDs
+* UUIDs
+* References
 
 ---
 
-### 2. Authentication
+## Vertical Authorization
 
-* Test password reset logic
-* Test token reuse and predictability
-* Identify missing validation
+Can lower-privileged users access higher-privileged functionality?
 
-Goal:
+Focus:
 
-* Account takeover
-
----
-
-### 3. Business logic
-
-* Identify workflow weaknesses
-* Test step skipping and state manipulation
+* Administrative actions
+* Restricted endpoints
+* Sensitive operations
 
 ---
 
-### 4. File handling and SSRF
+## Function-Level Authorization
 
-* File upload execution
-* Internal network access
+Test:
+
+* Hidden endpoints
+* API functions
+* Administrative actions
 
 ---
 
-### 5. Input-based vulnerabilities
+# 6. INPUT TESTING
+
+## Objective
+
+Identify whether user-controlled input reaches sensitive components.
+
+---
+
+## Input Mapping
+
+For every input determine:
+
+```text
+Input
+ ↓
+Processing
+ ↓
+Sensitive Component
+```
+
+---
+
+## Sensitive Components
+
+Database:
+
+* SQL Injection
+* NoSQL Injection
+
+Browser:
 
 * XSS
-* SQL injection
+
+Operating System:
+
+* Command Injection
+
+Template Engines:
+
 * SSTI
 
----
+XML Parsers:
 
-## 5. EXPLOITATION PROCESS
+* XXE
 
-### Step 1 — Confirm
+External Requests:
 
-* Verify the behavior is controllable
+* SSRF
 
----
+File Systems:
 
-### Step 2 — Analyze
-
-* Identify context and processing logic
-
----
-
-### Step 3 — Bypass
-
-* Modify payload structure
-* Use alternate encodings
-* Break context
+* Path Traversal
+* File Inclusion
 
 ---
 
-### Step 4 — Escalate
+## Modern Web Attacks
 
-* Access other users
-* Gain higher privileges
-* Reach code execution
+Review:
 
----
-
-## 6. CHAINING
-
-### Core question
-
-What can this vulnerability lead to
+* Host Header Injection
+* HTTP Parameter Pollution
+* Request Smuggling
+* Cache Poisoning
+* Cache Deception
+* Insecure Deserialization
 
 ---
 
-### Typical paths
+# 7. BUSINESS LOGIC TESTING
 
-* IDOR → account modification → account takeover
-* SSRF → internal access → further exploitation
-* File upload → stored XSS → admin interaction → escalation
+## Objective
+
+Identify flaws in application workflows.
 
 ---
 
-## 7. MODERN ATTACK SURFACE
+## Workflow Analysis
 
-* Request smuggling
-* Cache poisoning
-* JWT weaknesses
+Identify:
+
+* Multi-step processes
+* State transitions
+* Approval flows
+
+---
+
+## Test Logic Controls
+
+Review:
+
+* Step skipping
+* State manipulation
 * Race conditions
-* Prototype pollution
+* Rate limiting
 
 ---
 
-## 8. TOOL USAGE
+## Financial Logic
 
-### Workflow
+Review:
 
-1. Capture traffic
-2. Test manually
-3. Fuzz selectively
-4. Automate when needed
-
----
-
-### Rule
-
-Tools support decisions. They do not make decisions.
+* Payments
+* Coupons
+* Discounts
+* Referral systems
 
 ---
 
-## 9. EFFICIENCY
+# 8. CLIENT-SIDE TESTING
 
-* Prioritize high-impact areas
-* Avoid spending too long on one vector
-* Move quickly between attack paths
+## Objective
 
----
-
-## 10. VERIFICATION
-
-* Identify what changed in the response
-* Confirm consistency
-* Eliminate false positives
+Identify vulnerabilities executed in the browser.
 
 ---
 
+## Review Client-Side Logic
+
+Identify:
+
+* JavaScript security controls
+* Hidden functionality
+* Client-side validation
+
+---
+
+## Test Browser Features
+
+Review:
+
+* Browser storage
+* Web messaging
+* WebSockets
+* CORS
+
+---
+
+## Test Client-Side Vulnerabilities
+
+Review:
+
+* DOM XSS
+* Prototype Pollution
+* Open Redirects
+* Clickjacking
+
+---
+
+# 9. EXPLOITATION & CHAINING
+
+## Confirm
+
+Verify the vulnerability is controllable.
+
+---
+
+## Analyze
+
+Determine:
+
+* Trust boundary crossed
+* Security control bypassed
+* Exploitation requirements
+
+---
+
+## Escalate
+
+Attempt:
+
+* Account Takeover
+* Privilege Escalation
+* Internal Access
+* Code Execution
+
+---
+
+## Chain Vulnerabilities
+
+Combine findings where possible.
+
+Examples:
+
+```text
+IDOR
+ ↓
+Account Modification
+ ↓
+Account Takeover
+```
+
+```text
+SSRF
+ ↓
+Internal Access
+ ↓
+RCE
+```
+
+---
+
+# 10. VERIFICATION
+
+## Validate Findings
+
+Confirm:
+
+* Consistent reproduction
+* Reliable impact
+* No false positives
+
+---
+
+## Document Findings
+
+Record:
+
+* Attack path
+* Impact
+* Evidence
+* Reproduction steps
+
+```
+```

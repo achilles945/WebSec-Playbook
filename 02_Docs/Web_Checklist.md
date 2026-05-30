@@ -1,628 +1,99 @@
-# Web Pentesting Checklist
-
-# Recon
-
-## Subdomain Enumeration
-
-- Development subdomains
-- Staging subdomains
-- Admin panels
-- API subdomains
-- Internal applications
-- Forgotten domains
-- Subdomain takeover
-
----
-
-## Directory and File Fuzzing
-
-- Hidden directories
-- Hidden endpoints
-- Backup files
-- Debug files
-- Configuration files
-- Admin panels
-- API routes
-- Old API versions
-
----
-
-## Directory Listing
-
-### Common Targets
-
-```text
-/uploads/
-/backup/
-/assets/
-/logs/
-/images/
-```
-
-### Check For
-
-- Exposed files
-- Backup archives
-- Uploaded files
-- Source code exposure
-- Log exposure
-
----
-
-## Technology Fingerprinting
-
-- Backend framework
-- Frontend framework
-- CMS
-- WAF
-- Reverse proxy
-- API technologies
-- Cloud infrastructure
-
----
-
-## JavaScript Analysis
-
-- Hidden endpoints
-- API routes
-- Tokens
-- API keys
-- Secrets
-- Internal URLs
-- GraphQL queries
-- Hidden functionality
-
----
-
-## Metafiles
-
-- `robots.txt`
-- `sitemap.xml`
-- `security.txt`
-- `humans.txt`
-
-Check for:
-- hidden paths
-- admin routes
-- internal URLs
-- sensitive information
-
----
-
-## Endpoint Mapping
-
-- Authentication endpoints
-- Password reset functionality
-- File upload functionality
-- Payment functionality
-- Search functionality
-- APIs
-- GraphQL
-- WebSockets
-- Admin functionality
-
----
-
-## Parameter Discovery
-
-- GET parameters
-- POST parameters
-- JSON parameters
-- Headers
-- Cookies
-- Multipart parameters
-- Hidden parameters
-- HTTP parameter pollution
-
----
-
-# Authentication Testing
-
-## Login Testing
-
-- Username enumeration
-- Weak passwords
-- Missing rate limiting
-- MFA bypass
-- Default credentials
-- CAPTCHA bypass
-- Response manipulation
-
----
-
-## Password Reset Testing
-
-- Host header poisoning
-- Token leakage
-- Token reuse
-- Token predictability
-- User enumeration
-- Expired token reuse
-- Weak reset workflows
-
----
-
-## Session Testing
-
-- Session fixation
-- Session reuse
-- Logout invalidation
-- Session expiration
-- Predictable sessions
-- Concurrent sessions
-- Session hijacking
-
----
-
-## Cookie Testing
-
-- Missing `HttpOnly`
-- Missing `Secure`
-- Missing `SameSite`
-- Persistent cookies
-- Predictable cookie values
-
----
-
-## JWT Testing
-
-- `alg:none`
-- Weak HMAC secrets
-- Signature validation bypass
-- Key confusion
-- Expiration validation
-- Role manipulation
-- JWT information disclosure
-
----
-
-## 2FA Testing
-
-- OTP brute force
-- OTP reuse
-- Response manipulation
-- Status code manipulation
-- Null OTP bypass
-- Session-based bypass
-
----
-
-# Authorization Testing
-
-## Horizontal Privilege Escalation
-
-- IDOR
-- Unauthorized object access
-- Parameter tampering
-- Access to other users’ data
-- Access to other users’ actions
-
----
-
-## Vertical Privilege Escalation
-
-- Admin functionality access
-- Hidden endpoints
-- Function-level authorization
-- Role validation bypass
-- Forced browsing
-
----
-
-## Forced Browsing
-
-### Common Targets
-
-```text
-/admin
-/internal
-/manage
-/debug
-/dashboard
-```
-
-### Check For
-
-- Hidden functionality
-- Unauthenticated access
-- Weak authorization
-- Internal applications
-
----
-
-## HTTP Method Testing
-
-### Test
-
-```http
-GET
-POST
-PUT
-PATCH
-DELETE
-OPTIONS
-TRACE
-```
-
-### Check For
-
-- Unauthorized methods
-- Hidden functionality
-- Method override
-- Access control bypass
-
----
-
-# Injection Testing
-
-# XSS
-
-## Reflected XSS
-
-- Search functionality
-- URL parameters
-- Error messages
-- Headers
-
----
-
-## Stored XSS
-
-- Comments
-- Profiles
-- Ticket systems
-- Chat systems
-- File names
-
----
-
-## DOM XSS
-
-### Sources
-
-```javascript
-location
-document.URL
-document.referrer
-postMessage
-```
-
-### Sinks
-
-```javascript
-innerHTML
-eval
-document.write
-```
-
----
-
-## SQL Injection
-
-- Error-based SQLi
-- Boolean SQLi
-- Time-based SQLi
-- UNION injection
-- Header-based SQLi
-- Cookie-based SQLi
-
----
-
-## SSTI
-
-- Email templates
-- PDF generators
-- Template rendering
-- Error pages
-
----
-
-## Command Injection
-
-- Ping functionality
-- File processing
-- Diagnostic tools
-- OS command execution
-
----
-
-## XXE
-
-- XML APIs
-- SOAP APIs
-- SVG upload
-- XML parsers
-
----
-
-## SSRF
-
-### Targets
-
-```text
-127.0.0.1
-localhost
-169.254.169.254
-```
-
-### Common Sources
-
-- URL import functionality
-- Webhooks
-- PDF generators
-- Image fetchers
-
----
-
-## Path Traversal
-
-- File download functionality
-- Image retrieval
-- Export functionality
-- Template loading
-
----
-
-## LDAP Injection
-
-- Login forms
-- Search functionality
-- Directory services
-
----
-
-## XPath Injection
-
-- XML-based applications
-- Authentication functionality
-
----
-
-## Host Header Injection
-
-- Password reset poisoning
-- Cache poisoning
-- Routing-based SSRF
-- Host override headers
-- Virtual host brute forcing
-
----
-
-# File Upload Testing
-
-- Extension validation
-- MIME validation
-- Double extensions
-- SVG upload
-- File overwrite
-- Path traversal
-- File execution
-- Large file upload
-- Polyglot files
-
----
-
-# Business Logic Testing
-
-## Workflow Testing
-
-- Step skipping
-- State manipulation
-- Workflow bypass
-- Replay attacks
-- Transaction abuse
-
----
-
-## Payment Testing
-
-- Price manipulation
-- Quantity manipulation
-- Currency manipulation
-- Payment bypass
-- Duplicate transactions
-
----
-
-## Coupon and Referral Testing
-
-- Multiple redemption
-- Referral abuse
-- Token reuse
-- Race conditions
-
----
-
-## Race Conditions
-
-### Common Targets
-
-- Coupon redemption
-- Wallet transfers
-- OTP verification
-- Balance updates
-- Stock purchases
-
----
-
-## Rate Limiting
-
-- Login brute force
-- OTP brute force
-- Password reset abuse
-- API abuse
-- Race condition bypass
-
----
-
-# API Testing
-
-## API Recon
-
-- Hidden APIs
-- Deprecated APIs
-- Internal APIs
-- GraphQL endpoints
-- Swagger/OpenAPI
-
----
-
-## Method Testing
-
-- Unauthorized methods
-- Hidden methods
-- Admin functionality
-
----
-
-## Content-Type Testing
-
-```http
-application/json
-application/xml
-multipart/form-data
-application/x-www-form-urlencoded
-```
-
-Check for:
-- parser differences
-- validation bypass
-- XXE exposure
-
----
-
-## Mass Assignment
-
-- Hidden parameters
-- Role manipulation
-- Internal flags
-- Privilege escalation
-
----
-
-## Excessive Data Exposure
-
-- Hidden fields
-- Sensitive attributes
-- Internal properties
-- Debug information
-
----
-
-## GraphQL Testing
-
-- Introspection
-- Nested query abuse
-- Authorization issues
-- Excessive data exposure
-- Batch queries
-
----
-
-## WebSocket Testing
-
-- Authentication
-- Authorization
-- Message tampering
-- Subscription abuse
-- Hidden actions
-
----
-
-# Advanced HTTP Attacks
-
-## HTTP Request Smuggling
-
-- CL.TE
-- TE.CL
-- TE.TE
-- HTTP desynchronization
-
----
-
-## Web Cache Poisoning
-
-- Reflected headers
-- Unkeyed inputs
-- Cache key behavior
-- Cache poisoning gadgets
-
----
-
-## Web Cache Deception
-
-- Static extension confusion
-- Cache rule abuse
-- Sensitive response caching
-
----
-
-# Security Misconfiguration
-
-- CORS
-- Verbose errors
-- Debug endpoints
-- Default credentials
-- Directory listing
-- Exposed `.git`
-- Exposed backups
-- Missing security headers
-
----
-
-# Sensitive Data Exposure
-
-- API keys
-- Tokens
-- Password hashes
-- Internal endpoints
-- Source maps
-- Stack traces
-- Cloud credentials
-
----
-
-# Client-Side Testing
-
-## Open Redirect
-
-- Redirect parameters
-- OAuth redirects
-- Post-login redirects
-
----
-
-## CORS Testing
-
-- Wildcard origins
-- Credentialed requests
-- Reflection-based origins
-
----
-
-## Clickjacking
-
-- Missing `X-Frame-Options`
-- Missing CSP frame protections
-
----
-
-## Prototype Pollution
-
-- Client-side pollution
-- DOM-based pollution
-- Gadget discovery
-
----
-
-# Response Analysis
-
-- Status code differences
-- Response length differences
-- Error messages
-- Authorization behavior
-- Hidden fields
-- Stack traces
-- Backend information disclosure
-
----
+# Web Application Pentesting Checklist
+
+| Test ID | Test Name | Status | Notes |
+| --- | --- | --- | --- |
+| **WEB-RECON** | **Reconnaissance & Attack Surface Mapping** |  |  |
+| WEB-RECON-01 | Enumerate subdomains |  |  |
+| WEB-RECON-02 | Identify development and staging environments |  |  |
+| WEB-RECON-03 | Perform directory and file fuzzing |  |  |
+| WEB-RECON-04 | Check for directory listing |  |  |
+| WEB-RECON-05 | Identify hidden files and backup files |  |  |
+| WEB-RECON-06 | Review robots.txt and sitemap.xml |  |  |
+| WEB-RECON-07 | Fingerprint technologies and frameworks |  |  |
+| WEB-RECON-08 | Analyze JavaScript files |  |  |
+| WEB-RECON-09 | Extract endpoints and parameters from JavaScript |  |  |
+| WEB-RECON-10 | Discover Swagger/OpenAPI documentation |  |  |
+| **WEB-CONF** | **Configuration Testing** |  |  |
+| WEB-CONF-01 | Test supported HTTP methods |  |  |
+| WEB-CONF-02 | Review security headers |  |  |
+| WEB-CONF-03 | Test CORS configuration |  |  |
+| WEB-CONF-04 | Check TLS/HTTPS configuration |  |  |
+| WEB-CONF-05 | Check for exposed admin panels |  |  |
+| WEB-CONF-06 | Check for exposed debug functionality |  |  |
+| WEB-CONF-07 | Check for exposed backups |  |  |
+| WEB-CONF-08 | Check for exposed source code repositories |  |  |
+| WEB-CONF-09 | Check for default credentials |  |  |
+| WEB-CONF-10 | Check for verbose error messages |  |  |
+| WEB-CONF-11 | Check for cloud storage exposure |  |  |
+| WEB-CONF-12 | Test for subdomain takeover opportunities |  |  |
+| **WEB-AUTH** | **Authentication Testing** |  |  |
+| WEB-AUTH-01 | Test user registration |  |  |
+| WEB-AUTH-02 | Test account enumeration |  |  |
+| WEB-AUTH-03 | Test login functionality |  |  |
+| WEB-AUTH-04 | Test password policy |  |  |
+| WEB-AUTH-05 | Test password reset functionality |  |  |
+| WEB-AUTH-06 | Test password change functionality |  |  |
+| WEB-AUTH-07 | Test remember-me functionality |  |  |
+| WEB-AUTH-08 | Test MFA implementation |  |  |
+| WEB-AUTH-09 | Test OAuth authentication |  |  |
+| WEB-AUTH-10 | Test SSO implementation |  |  |
+| **WEB-SESS** | **Session Management Testing** |  |  |
+| WEB-SESS-01 | Review session identifiers |  |  |
+| WEB-SESS-02 | Review cookie security attributes |  |  |
+| WEB-SESS-03 | Test session fixation |  |  |
+| WEB-SESS-04 | Test session invalidation after logout |  |  |
+| WEB-SESS-05 | Test session timeout |  |  |
+| WEB-SESS-06 | Test concurrent sessions |  |  |
+| WEB-SESS-07 | Test session reuse |  |  |
+| WEB-SESS-08 | Test JWT implementation |  |  |
+| WEB-SESS-09 | Test CSRF protections |  |  |
+| **WEB-AUTHZ** | **Authorization Testing** |  |  |
+| WEB-AUTHZ-01 | Test horizontal privilege escalation |  |  |
+| WEB-AUTHZ-02 | Test vertical privilege escalation |  |  |
+| WEB-AUTHZ-03 | Test IDOR vulnerabilities |  |  |
+| WEB-AUTHZ-04 | Test forced browsing |  |  |
+| WEB-AUTHZ-05 | Test function-level authorization |  |  |
+| WEB-AUTHZ-06 | Test object-level authorization |  |  |
+| WEB-AUTHZ-07 | Test role manipulation |  |  |
+| WEB-AUTHZ-08 | Test authorization on API endpoints |  |  |
+| **WEB-INPUT** | **Input Validation Testing** |  |  |
+| WEB-INPUT-01 | Test reflected XSS |  |  |
+| WEB-INPUT-02 | Test stored XSS |  |  |
+| WEB-INPUT-03 | Test DOM XSS |  |  |
+| WEB-INPUT-04 | Test SQL injection |  |  |
+| WEB-INPUT-05 | Test NoSQL injection |  |  |
+| WEB-INPUT-06 | Test SSTI |  |  |
+| WEB-INPUT-07 | Test command injection |  |  |
+| WEB-INPUT-08 | Test XXE |  |  |
+| WEB-INPUT-09 | Test SSRF |  |  |
+| WEB-INPUT-10 | Test path traversal |  |  |
+| WEB-INPUT-11 | Test file inclusion vulnerabilities |  |  |
+| WEB-INPUT-12 | Test host header injection |  |  |
+| WEB-INPUT-13 | Test HTTP parameter pollution |  |  |
+| WEB-INPUT-14 | Test HTTP request smuggling |  |  |
+| WEB-INPUT-15 | Test web cache poisoning |  |  |
+| WEB-INPUT-16 | Test web cache deception |  |  |
+| WEB-INPUT-17 | Test insecure deserialization |  |  |
+| WEB-INPUT-18 | Test file upload functionality |  |  |
+| **WEB-BUSLOGIC** | **Business Logic Testing** |  |  |
+| WEB-BUSLOGIC-01 | Test workflow bypasses |  |  |
+| WEB-BUSLOGIC-02 | Test step skipping |  |  |
+| WEB-BUSLOGIC-03 | Test state manipulation |  |  |
+| WEB-BUSLOGIC-04 | Test race conditions |  |  |
+| WEB-BUSLOGIC-05 | Test rate limiting controls |  |  |
+| WEB-BUSLOGIC-06 | Test payment workflows |  |  |
+| WEB-BUSLOGIC-07 | Test coupon and discount functionality |  |  |
+| WEB-BUSLOGIC-08 | Test referral systems |  |  |
+| WEB-BUSLOGIC-09 | Test transaction workflows |  |  |
+| WEB-BUSLOGIC-10 | Test integrity checks |  |  |
+| **WEB-CLIENT** | **Client-Side Testing** |  |  |
+| WEB-CLIENT-01 | Test DOM-based vulnerabilities |  |  |
+| WEB-CLIENT-02 | Test open redirects |  |  |
+| WEB-CLIENT-03 | Test clickjacking protections |  |  |
+| WEB-CLIENT-04 | Test browser storage |  |  |
+| WEB-CLIENT-05 | Test web messaging |  |  |
+| WEB-CLIENT-06 | Test prototype pollution |  |  |
+| WEB-CLIENT-07 | Test WebSocket security |  |  |
+| WEB-CLIENT-08 | Test client-side resource manipulation |  |  |
+| WEB-CLIENT-09 | Test CORS implementation |  |  |
+| WEB-CLIENT-10 | Test XSSI vulnerabilities |  |  |

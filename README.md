@@ -1,416 +1,230 @@
-# WebSec-Playbook
----
+# WebSec Playbook
 
+## Testing Flow
 
-## 1. Recon & Attack Surface Expansion
-
-### Objective
-
-Expand a single web application into its full attack surface and identify all reachable inputs, endpoints, and hidden functionality.
-
----
-
-### Phase 1 — Domain & Subdomain Discovery
-
-* Identify main domain
-
-* Enumerate subdomains:
-
-  * Passive (certs, archives)
-  * Active (bruteforce)
-  * Tool : Subfinder
-
-* Look for:
-
-  * dev, staging, test environments
-  * admin panels
-  * old / unused subdomains
+```text
+Recon
+ ↓
+Configuration
+ ↓
+Authentication
+ ↓
+Session
+ ↓
+Authorization
+ ↓
+Input Validation
+ ↓
+Business Logic
+ ↓
+Client-Side
+ ↓
+Chaining
+```
 
 ---
 
-### Phase 2 — Endpoint & Content Discovery
+## Recon
 
-* Crawl application (Burp / browser)
+### Discover
 
-* Extract:
+* Subdomains
+* Directories
+* Files
+* APIs
+* Parameters
+* JavaScript Endpoints
+* GraphQL
+* WebSockets
 
-  * URLs
-  * Parameters
-  * API endpoints
+### Map
 
-* Directory & file discovery:
-
-  * Hidden endpoints
-  * Backup files (.bak, .old, .zip)
-  * Config files
-  * Tool : FUFF,Gobuster,Dirbuster
-
-* Check:
-
-  * HTTP methods (GET, POST, PUT, DELETE)
-
----
-
-### Phase 3 — JavaScript Analysis
-
-* Collect all JS files
-
-* Look for:
-
-  * API endpoints
-  * Hidden routes
-  * Hardcoded secrets
-  * Tokens / keys
-  * Internal URLs
-
-* Extract:
-
-  * Parameters
-  * Function names
-  * Interesting logic
+* Authentication
+* Session Management
+* Authorization Boundaries
+* File Uploads
+* Administrative Functionality
+* Payment Functionality
 
 ---
 
-### Phase 4 — Parameter Discovery
+## Configuration
 
-* Identify all inputs:
+### Review
 
-  * GET / POST
-  * JSON
-  * Headers
-  * Cookies
-
-* Find hidden parameters:
-
-  * Fuzz parameters
-  * Analyze JS
-
-* Test:
-
-  * Parameter pollution
-  * Unused parameters
+* HTTP Methods
+* Security Headers
+* TLS Configuration
+* CORS Configuration
+* Admin Panels
+* Debug Functionality
+* Source Code Exposure
+* Backup Files
+* Cloud Storage Exposure
+* Default Credentials
 
 ---
 
-### Phase 5 — API Recon
+## Authentication
 
-* Identify API endpoints:
+### Test
 
-  * `/api/`, `/v1/`, `/v2/`
+* Registration
+* Login
+* Password Reset
+* Password Change
+* MFA
+* OAuth
+* OpenID Connect
+* SSO
 
-* Test:
+### Focus
 
-  * Different HTTP methods
-  * Hidden fields
-  * Mass assignment
-
-* Map:
-
-  * Request → Response structure
-
----
-
-### Phase 6 — Authentication Surface Mapping
-
-* Identify:
-
-  * Login
-  * Register
-  * Password reset
-  * OTP / 2FA
-
-* Map:
-
-  * Token flow
-  * Session handling
-  * Cookies
+* Account Takeover
+* Authentication Bypass
+* User Enumeration
 
 ---
 
-### Phase 7 — File & Upload Surface
+## Session
 
-* Identify:
+### Test
 
-  * File upload functionality
-  * File retrieval endpoints
+* Session Fixation
+* Session Timeout
+* Session Invalidation
+* Session Reuse
+* JWT Security
+* Cookie Security
+* CSRF Protection
 
-* Check:
+### Focus
 
-  * File types allowed
-  * Storage location
-  * Access patterns
-
----
-
-### Phase 8 — Data Flow Mapping
-
-For every input, identify where it goes:
-
-* Reflection → XSS
-* Database → SQLi
-* File system → Path Traversal
-* System calls → Command Injection
-* Templates → SSTI
-* External request → SSRF
+* Session Hijacking
+* Session Abuse
 
 ---
 
-### Phase 9 — Technology & Behavior Analysis
+## Authorization
 
-* Identify:
+### Test
 
-  * Frameworks
-  * Backend language
-  * WAF / CDN
+* Horizontal Access Control
+* Vertical Access Control
+* IDOR
+* Forced Browsing
+* Function-Level Authorization
+* Object-Level Authorization
 
-* Observe:
+### Focus
 
-  * Error messages
-  * Response patterns
-  * Redirects
-
----
-
-### Phase 10 — Hidden Attack Surface
-
-* Check:
-
-  * Backup domains
-  * Old endpoints
-  * Deprecated APIs
-
-* Look for:
-
-  * Admin panels
-  * Debug endpoints
-  * Internal tools
+* Privilege Escalation
+* Unauthorized Access
 
 ---
 
-### Output
+## Input Validation
 
-* Domains & subdomains
-* Endpoints & APIs
-* Parameters (all types)
-* Authentication flows
-* File upload points
-* Hidden functionality
-* Data flow mapping
+### Map
 
----
+```text
+Input
+ ↓
+Processing
+ ↓
+Sensitive Component
+```
 
-## 2. Input Surface Mapping
+### Test
 
-### Objective
+| Component        | Vulnerability     |
+| ---------------- | ----------------- |
+| Browser          | XSS               |
+| Database         | SQL Injection     |
+| Template Engine  | SSTI              |
+| Operating System | Command Injection |
+| XML Parser       | XXE               |
+| URL Fetcher      | SSRF              |
+| File System      | Path Traversal    |
 
-Identify all user-controlled inputs.
+### Modern Attacks
 
-### Methodology
-
-**Identify Inputs**
-
-* URL parameters
-* POST / JSON data
-* Headers
-* Cookies
-* File uploads
-
-**Trace Data Flow**
-
-* Reflection → XSS
-* Database interaction → SQLi
-* System calls → Command Injection
-* Template rendering → SSTI
-
-**Micro-Tactics**
-
-* Inject test string → check response
-* Check:
-
-  * View source (server-side)
-  * DevTools (DOM)
-* Identify context (HTML / Attribute / JS)
-
-**API Awareness**
-
-* JSON parameters
-* Hidden fields
-* Versioned APIs (`/v1/`, `/v2/`)
-* Mass assignment
+* Host Header Injection
+* HTTP Parameter Pollution
+* Request Smuggling
+* Cache Poisoning
+* Cache Deception
+* Insecure Deserialization
 
 ---
 
-## 3. Input-Based Vulnerabilities
+## Business Logic
 
-### 3.1 XSS
+### Test
 
-**Methodology**
-
-* Inject payload → confirm reflection
-* Identify context → craft payload
-* Test execution in browser
-
-**Detection**
-
-* Script execution vs reflection
-
----
-
-### 3.2 SQL Injection
-
-**Methodology**
-
-* Inject test payloads
-* Compare responses
-* Try boolean / time-based
-* Tool : sqlmap
-
-**Detection**
-
-* Errors
-* Response differences
-* Time delays
+* Workflow Bypass
+* Step Skipping
+* State Manipulation
+* Race Conditions
+* Rate Limiting
+* Payments
+* Coupons
+* Referrals
+* Transactions
 
 ---
 
-### 3.3 SSTI
+## Client-Side
 
-**Methodology**
+### Test
 
-* Detect template usage
-* Inject expressions
-* Confirm evaluation
-
----
-
-### 3.4 Command Injection
-
-**Methodology**
-
-* Inject OS commands
-* Observe output / delay
+* DOM XSS
+* Open Redirect
+* Prototype Pollution
+* Web Messaging
+* Browser Storage
+* WebSockets
+* Clickjacking
 
 ---
 
-### 3.5 File Upload
-
-**Methodology**
-
-* Upload files
-* Try execution / bypass filters
-
----
-
-### 3.6 Path Traversal
-
-**Methodology**
-
-* Manipulate file paths
-* Access sensitive files
-
----
-
-## 4. Authentication Testing
-
-### Objective
-
-Break authentication mechanisms.
-
-### Methodology
-
-**Login Testing**
-
-* Weak credentials
-* Brute force
-
-**Session Testing**
-
-* Token predictability
-* Session fixation
-
-**Password Reset**
-
-* Token reuse
-* Predictable tokens
-
-**Bypass**
-
-* Direct access to protected resources
-
----
-
-## 5. Authorization Testing
-
-### Objective
-
-Access unauthorized data or functionality.
-
-### Methodology
-
-**IDOR**
-
-* Modify object identifiers
-
-**Vertical Escalation**
-
-* Access admin functionality
-
-**Horizontal Escalation**
-
-* Access other user data
-
----
-
-## 6. Server-Side Vulnerabilities
-
-### SSRF
-
-* Identify URL-fetching features
-* Test internal endpoints
-* Check cloud metadata
-
-### XXE
-
-* Inject external entities
-* Read files / trigger SSRF
-
----
-
-## 7. Business Logic Testing
-
-### Objective
-
-Break application workflows.
-
-### Methodology
-
-* Skip steps
-* Repeat actions
-* Manipulate sequences
-* Abuse functionality
-
----
-
-## 8. Vulnerability Chaining
-
-### Objective
-
-Combine multiple weaknesses.
-
-### Examples
+## Chaining
 
 * IDOR → Account Takeover
-* SSRF → Internal Access → RCE
-* File Upload → Remote Execution
+* SSRF → Internal Access
+* File Upload → RCE
+* XSS → Session Theft
+* Request Smuggling → Cache Poisoning
+* SSRF → Cloud Metadata → Credential Theft
+
+---
+
+## Priorities
+
+```text
+Account Takeover
+ ↓
+Privilege Escalation
+ ↓
+Sensitive Data Exposure
+ ↓
+Remote Code Execution
+```
 
 ---
 
 ## Core Mental Model
 
-1. Expand attack surface
-2. Map inputs
-3. Understand data flow
-4. Execute targeted attacks
-5. Chain vulnerabilities
-
----
+```text
+Attack Surface
+ ↓
+Input
+ ↓
+Data Flow
+ ↓
+Trust Boundary
+ ↓
+Exploit
+ ↓
+Impact
+```
